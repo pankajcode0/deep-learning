@@ -16,18 +16,59 @@ class perceptron:
         l = train.shape[1]
         converge = False
         j=0
+       
         while(not converge):
             i = np.random.randint(train.shape[0])
             x_i = train[i,:l-1]
             y = train[i][l-1]  
             if (y==1 and np.dot(w,x_i)<0):
                 w=w+x_i 
+                
             if (y==0 and np.dot(w,x_i)>0):
                 w=w-x_i
+               
             if(j>maxIteration ):
                 converge=True
             j=j+1
+            
         return w
+class predictions:
+    def lossfunction(self,train,w):
+        train = np.hstack((np.ones((train.shape[0],1)),train))
+        l = train.shape[1]
+        prediction = []
+        numMisclasification = 0
+        truePositive = 0
+        trueNegative = 0
+        falsePositive = 0
+        falseNegative = 0
+        index = 0
+        for i in train:
+            x_i = i[:l-1]
+            y = i[l-1]  
+            prediction.append([ np.dot(x_i,w),int(y)])
+            print(prediction[index][1],"\n")
+            if (prediction[index][1]==0 and prediction[index][0]>=0):
+                numMisclasification = numMisclasification+1
+                falseNegative = falseNegative+1
+            if (prediction[index][1]==0 and prediction[index][0]<=0):
+                falsePositive = falsePositive + 1
+            if (prediction[index][1]==1 and prediction[index][0]<0):
+                numMisclasification = numMisclasification+1
+                trueNegative = trueNegative + 1
+            if (prediction[index][1]==1 and prediction[index][0]>=0):
+                truePositive = truePositive + 1
+            index = index+1
+        loss = numMisclasification/train.shape[0]
+        self.accuracy = (1-loss)*100
+        self.predictList = prediction
+        self.numMisclasification=numMisclasification
+        self.truePositive=truePositive
+        self.trueNegative = trueNegative
+        self.falsePositive = falsePositive
+        self.falseNegative = falseNegative
+        
+   
 def perceptronLine(data,w):
     x1=np.amin(data[:,0])
     x2=np.amax(data[:,1])
@@ -64,16 +105,24 @@ def wploter(train,test,color,w):
     plt.show()
 
 
-train = pd.read_csv("Datasets-Question1/dataset6/Train6.csv",header=None,names=["x1","x2","y"])
+train = pd.read_csv("Datasets-Question1/dataset1/Train1.csv",header=None,names=["x1","x2","y"])
 test = pd.read_csv("Datasets-Question1/dataset1/Test1.csv",header=None,names=["x1","x2","y"])
 
 new_perceptron = perceptron(train,test)
 
-print(new_perceptron.train.shape)
-print(new_perceptron.test.shape)
-print(new_perceptron.w)
+#print(new_perceptron.train.shape)
+#print(new_perceptron.test.shape)
+#y = np.array([new_perceptron.w]*train.shape[0])
+#print(y)
 print(new_perceptron.perceptronAlgorithm(new_perceptron.train))
-print(perceptronLine(new_perceptron.test,new_perceptron.w))
+#print(perceptronLine(new_perceptron.test,new_perceptron.w))
 #ploter(np.array(train),color,perceptronLine(new_perceptron.test,new_perceptron.w))
-#ploter(np.array(test),color,perceptronLine(new_perceptron.test,new_perceptron.w))
-wploter(np.array(train),np.array(test),color,new_perceptron.w)
+#ploter(np.array(test),color,perceptronLine(new_perceptron.test,new_perceptron.w))#
+#wploter(np.array(train),np.array(test),color,new_perceptron.w)
+test = predictions()
+test.lossfunction(np.array(train),new_perceptron.w)
+print("accuracy",test.accuracy)
+print(test.trueNegative)
+print(test.truePositive)
+print(test.falseNegative)
+print(test.falsePositive)
